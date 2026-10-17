@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Canopy Clash · $CC · AI agents battle in the jungle</title>
+<meta name="description" content="Canopy Clash: hold $CC, wake your AI agent and clash with rival AIs deep in the pixel jungle for amber, vines and relics.">
+<meta name="theme-color" content="#0d1f16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%230d1f16'/%3E%3Crect x='3' y='2' width='10' height='8' fill='%23e8eef2'/%3E%3Crect x='4' y='4' width='8' height='3' fill='%235ff2ff'/%3E%3Crect x='6' y='0' width='4' height='2' fill='%236bd16b'/%3E%3Crect x='4' y='10' width='8' height='5' fill='%23e0503c'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0b1a12;--bg2:#10271b;--panel:#13301f;--panel2:#1a3d27;--line:#06100a;--moss:#3d6b3a;--leaf:#6bd16b;--leaf2:#9be36b;
+  --amber:#f5b942;--amber2:#d98a1e;--water:#5fd3e6;--red:#e0503c;--purple:#a46bff;--text:#eaf3e2;--mute:#9fb79a;--dirt:#b9733c;
+  --pix:"Press Start 2P",ui-monospace,monospace;--body:"Pixelify Sans",ui-rounded,"Trebuchet MS",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:18px;line-height:1.5;overflow-x:hidden;
+  background-image:radial-gradient(rgba(107,209,107,.06) 1px,transparent 1px);background-size:8px 8px}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+[hidden]{display:none!important}
+canvas.px{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+:focus-visible{outline:3px dashed var(--amber);outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.tk{font-family:var(--pix);font-size:.8em;letter-spacing:.02em;white-space:nowrap}
+.title .tk,.btn .tk,.tag .tk,.step h3 .tk,.rival h3 .tk,.token h3 .tk,.sec-head h2 .tk{font-size:1em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ===== pixel UI kit ===== */
+.pbox{position:relative;background:var(--panel);border:4px solid var(--line);box-shadow:inset 0 0 0 4px var(--moss),inset 0 0 0 8px var(--line),0 6px 0 var(--line);padding:22px}
+.pbox.wood{background:linear-gradient(180deg,#7a4e2a,#5e3a1f);box-shadow:inset 0 0 0 4px #9b6a3a,inset 0 0 0 8px var(--line),0 6px 0 var(--line)}
+.pbox.stone{background:#2d3b36;box-shadow:inset 0 0 0 4px #4d6e64,inset 0 0 0 8px var(--line),0 6px 0 var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:var(--pix);font-size:13px;line-height:1.4;padding:14px 18px;text-decoration:none;color:#1b1206;background:var(--amber);border:4px solid var(--line);box-shadow:inset -4px -4px 0 var(--amber2),inset 4px 4px 0 #ffe08a,0 5px 0 var(--line);cursor:pointer;transition:transform .08s;user-select:none;text-transform:uppercase}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(4px);box-shadow:inset -4px -4px 0 var(--amber2),inset 4px 4px 0 #ffe08a,0 1px 0 var(--line)}
+.btn.green{background:var(--leaf);box-shadow:inset -4px -4px 0 #3f9a3f,inset 4px 4px 0 #b6f59a,0 5px 0 var(--line)}
+.btn.green:active{box-shadow:inset -4px -4px 0 #3f9a3f,inset 4px 4px 0 #b6f59a,0 1px 0 var(--line)}
+.btn.dark{background:#22382b;color:var(--text);box-shadow:inset -4px -4px 0 #142318,inset 4px 4px 0 #3d6b3a,0 5px 0 var(--line)}
+.btn.dark:active{box-shadow:inset -4px -4px 0 #142318,inset 4px 4px 0 #3d6b3a,0 1px 0 var(--line)}
+.btn.red{background:var(--red);color:#fff;box-shadow:inset -4px -4px 0 #9a2f22,inset 4px 4px 0 #ff8a74,0 5px 0 var(--line)}
+.btn.blue{background:var(--water);box-shadow:inset -4px -4px 0 #2f97a8,inset 4px 4px 0 #b4f3fb,0 5px 0 var(--line)}
+.btn.sm{font-size:10px;padding:10px 12px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.tag{display:inline-block;font-family:var(--pix);font-size:9px;padding:6px 8px;background:var(--line);color:var(--leaf);letter-spacing:.06em}
+.tag.amber{color:var(--amber)}.tag.red{color:#ff8a74}.tag.water{color:var(--water)}
+
+/* ===== nav ===== */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .2s}
+.nav.solid{background:rgba(9,22,14,.94);border-bottom:4px solid var(--line);box-shadow:0 4px 0 rgba(61,107,58,.4)}
+.nav-in{display:flex;align-items:center;gap:22px;height:68px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--pix);font-size:13px;color:var(--text);text-shadow:2px 2px 0 var(--line)}
+.logo b{color:var(--leaf)}
+.nlinks{display:flex;gap:4px}
+.nlinks a{font-family:var(--pix);font-size:9.5px;text-decoration:none;padding:8px 10px;color:var(--text);text-shadow:2px 2px 0 var(--line)}
+.nlinks a:hover{color:var(--amber)}
+.nav-r{margin-left:auto;display:flex;gap:10px;align-items:center}
+.icon-btn{width:48px;height:48px;padding:0}
+.btn.conn.on{background:var(--leaf)}
+
+/* ===== hero ===== */
+.hero{position:relative;height:100vh;min-height:620px;overflow:hidden;background:#0b1a12}
+#heroCv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero-ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:max(96px,13vh);text-align:center;pointer-events:none;z-index:2}
+.title{font-family:var(--pix);font-size:clamp(30px,6.4vw,78px);line-height:1.08;margin:0;color:#f4ffe0;letter-spacing:2px;
+  text-shadow:0 4px 0 #2b5a2a,0 8px 0 #163a1c,4px 4px 0 #0a1a0e,-3px 0 0 #0a1a0e,3px 0 0 #0a1a0e,0 -3px 0 #0a1a0e,0 12px 0 rgba(0,0,0,.35)}
+.title .b{color:var(--amber);text-shadow:0 4px 0 #a2581a,0 8px 0 #6b3510,4px 4px 0 #0a1a0e,-3px 0 0 #0a1a0e,3px 0 0 #0a1a0e,0 -3px 0 #0a1a0e,0 12px 0 rgba(0,0,0,.35)}
+.subt{margin:22px 0 0;font-size:clamp(17px,2vw,22px);font-weight:600;color:#fff;text-shadow:2px 2px 0 #0a1a0e,0 0 12px rgba(0,0,0,.6);max-width:640px;padding:0 16px}
+.subt b{color:var(--amber)}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:26px;pointer-events:auto}
+.hero-chip{margin-top:18px;pointer-events:auto}
+.bubble{position:absolute;z-index:3;transform:translate(-50%,-100%);background:rgba(16,30,20,.92);border:3px solid #e9f2e0;color:#fff;font-size:15px;font-weight:600;padding:7px 12px;white-space:nowrap;pointer-events:none;box-shadow:0 4px 0 rgba(0,0,0,.4);opacity:0;transition:opacity .2s}
+.bubble.on{opacity:1}
+.bubble:after{content:"";position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);border:7px solid transparent;border-top-color:#e9f2e0;border-bottom:0}
+.pop{position:absolute;z-index:4;font-family:var(--pix);font-size:16px;color:#fff;text-shadow:3px 3px 0 #000,-2px 0 0 #000,2px 0 0 #000,0 -2px 0 #000;pointer-events:none;animation:pop 1s ease-out forwards;transform:translate(-50%,-50%)}
+.pop.crit{color:var(--amber);font-size:20px}
+.pop.heal{color:var(--leaf)}
+.pop.miss{color:#cfd8dc;font-size:12px}
+@keyframes pop{0%{opacity:0;margin-top:6px}15%{opacity:1}100%{opacity:0;margin-top:-46px}}
+.hero-hud{position:absolute;left:0;right:0;bottom:22px;z-index:3;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding:0 16px}
+.hero-hud .pbox{padding:12px 16px;min-width:200px}
+.hpline{display:flex;align-items:center;gap:10px;font-family:var(--pix);font-size:9px}
+.hp{flex:1;height:14px;background:#2a0f0b;border:3px solid var(--line);position:relative;min-width:110px}
+.hp i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(180deg,#9be36b 0 50%,#5fb84d 50%);transition:width .35s steps(8)}
+.hp.r i{background:linear-gradient(180deg,#ff8a74 0 50%,#d0442f 50%)}
+.scroll{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);font-family:var(--pix);font-size:9px;color:#fff;text-shadow:2px 2px 0 #000;z-index:3;text-decoration:none;animation:bob 1.2s steps(2) infinite}
+@keyframes bob{50%{transform:translate(-50%,-4px)}}
+
+/* ===== sections ===== */
+.sec{padding:96px 0 30px;position:relative}
+.sec-head{text-align:center;max-width:760px;margin:0 auto 44px}
+.sec-head h2{font-family:var(--pix);font-size:clamp(20px,3.2vw,34px);line-height:1.35;margin:16px 0 14px;color:#f4ffe0;text-shadow:3px 3px 0 var(--line),0 4px 0 #2b5a2a}
+.sec-head p{margin:0;color:var(--mute);font-size:19px}
+.vines-top{height:28px;background:repeating-linear-gradient(90deg,#1f4a2f 0 16px,#2d6a3f 16px 24px,#173a24 24px 40px);border-top:4px solid var(--line);border-bottom:4px solid var(--line);position:relative}
+.vines-top:after{content:"";position:absolute;left:0;right:0;top:100%;height:22px;background:repeating-linear-gradient(90deg,transparent 0 30px,#2d6a3f 30px 34px,transparent 34px 70px,#3f8a46 70px 74px,transparent 74px 120px);-webkit-mask:linear-gradient(#000,transparent)}
+
+/* how */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.step .n{font-family:var(--pix);font-size:11px;color:var(--amber)}
+.step canvas{width:72px;height:72px;margin:14px 0 6px}
+.step h3{font-family:var(--pix);font-size:12.5px;line-height:1.5;margin:6px 0 8px}
+.step p{margin:0;color:var(--mute);font-size:16.5px}
+
+/* agent */
+.agent-grid{display:grid;grid-template-columns:420px 1fr;gap:26px;align-items:stretch}
+.portrait{display:flex;flex-direction:column;align-items:center}
+.portrait canvas{width:100%;max-width:340px;aspect-ratio:1;background:#0e2216;border:4px solid var(--line);box-shadow:inset 0 0 0 4px #24442c}
+.aname{font-family:var(--pix);font-size:15px;margin:16px 0 4px;text-align:center;line-height:1.5}
+.aclass{color:var(--leaf);font-weight:700}
+.stats{display:grid;gap:9px;width:100%;margin-top:14px}
+.stat{display:grid;grid-template-columns:52px 1fr 36px;gap:10px;align-items:center;font-family:var(--pix);font-size:9px}
+.bar{height:12px;background:#08140d;border:3px solid var(--line)}
+.bar i{display:block;height:100%;background:var(--leaf)}
+.ainfo{display:flex;flex-direction:column;gap:18px}
+.status-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.inv{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.item{background:#0e2216;border:3px solid var(--line);box-shadow:inset 0 0 0 3px #24442c;padding:12px 8px;text-align:center}
+.item canvas{width:36px;height:36px;margin:0 auto 6px}
+.item b{display:block;font-family:var(--pix);font-size:13px}
+.item span{font-size:13px;color:var(--mute)}
+.xp{height:16px;background:#08140d;border:3px solid var(--line);position:relative}
+.xp i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(180deg,#ffe08a 0 50%,var(--amber) 50%)}
+.xp span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--pix);font-size:8px;color:#fff;text-shadow:1px 1px 0 #000}
+.muted{color:var(--mute)}
+
+/* arena */
+.arena{display:grid;grid-template-columns:1fr 330px;gap:20px}
+.stage{position:relative}
+.stage canvas{width:100%;aspect-ratio:16/9;border:4px solid var(--line);box-shadow:0 6px 0 var(--line)}
+.ahud{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:12px;z-index:3;pointer-events:none}
+.ahud .side{background:rgba(9,22,14,.88);border:3px solid var(--line);padding:8px 10px;min-width:42%}
+.ahud .side.r{text-align:right}
+.ahud .nm{font-family:var(--pix);font-size:9px;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ahud .hpline{font-size:8px}
+.result{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(5,12,8,.72)}
+.result .pbox{text-align:center;max-width:420px}
+.result h3{font-family:var(--pix);font-size:22px;margin:0 0 12px}
+.result .loot{display:flex;justify-content:center;gap:14px;margin:12px 0 16px;flex-wrap:wrap}
+.result .loot span{font-family:var(--pix);font-size:11px;background:var(--line);padding:8px 10px}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.actions .btn{font-size:10.5px;padding:12px 8px;flex-direction:column;gap:4px}
+.actions .btn small{display:block;font-family:var(--body);font-size:12px;text-transform:none;font-weight:600;opacity:.8}
+.side-panel{display:flex;flex-direction:column;gap:16px}
+.rival-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rp{background:#0e2216;border:3px solid var(--line);padding:8px;cursor:pointer;text-align:center;font-family:var(--pix);font-size:8px;line-height:1.5;color:var(--text)}
+.rp canvas{width:48px;height:48px;margin:0 auto 4px}
+.rp[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--amber);background:#1d3a26}
+.blog{height:208px;overflow:auto;background:#08140d;border:3px solid var(--line);padding:8px 10px;font-size:15px;scrollbar-width:thin;scrollbar-color:var(--moss) transparent}
+.blog p{margin:0 0 4px}
+.blog .you{color:var(--leaf)}.blog .them{color:#ff8a74}.blog .sys{color:var(--mute)}.blog .loot{color:var(--amber)}
+.record{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.record div{background:#0e2216;border:3px solid var(--line);padding:8px 4px}
+.record b{display:block;font-family:var(--pix);font-size:14px}
+.record span{font-size:12.5px;color:var(--mute)}
+
+/* rivals */
+.rivals{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.rival{text-align:center}
+.rival canvas{width:120px;height:120px;margin:0 auto 10px;background:#0e2216;border:4px solid var(--line)}
+.rival h3{font-family:var(--pix);font-size:11.5px;margin:6px 0;line-height:1.5}
+.rival p{margin:0 0 10px;color:var(--mute);font-size:16px}
+.rival .chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+
+/* rules */
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.rules h3{font-family:var(--pix);font-size:13px;margin:0 0 14px}
+.rules ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.rules li{display:flex;gap:12px;align-items:flex-start;font-size:17px}
+.rules li i{flex:none;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-family:var(--pix);font-size:10px;border:3px solid var(--line);margin-top:2px}
+.can i{background:var(--leaf);color:#0a1a0e}.cant i{background:var(--red);color:#fff}
+
+/* token */
+.token{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+.token canvas{width:150px;height:150px}
+.token h3{font-family:var(--pix);font-size:28px;margin:0 0 10px;color:var(--amber);text-shadow:3px 3px 0 var(--line)}
+.token p{margin:0 0 14px;color:#f1e3cf}
+.ca{display:flex;align-items:center;gap:10px;width:100%;background:#08140d;border:3px solid var(--line);padding:10px 12px;font:13px ui-monospace,Menlo,Consolas,monospace;color:var(--leaf);cursor:pointer;text-align:left;text-decoration:none}
+.ca span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.token .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+
+footer{margin-top:90px;border-top:4px solid var(--line);background:#08140d;padding:40px 0 50px}
+.foot{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+.disc{max-width:640px;font-size:14.5px;color:var(--mute);line-height:1.6}
+
+.modal{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);padding:16px}
+.modal .pbox{width:min(420px,100%)}
+.modal h3{font-family:var(--pix);font-size:13px;margin:0 0 10px;line-height:1.5}
+.modal p{margin:0 0 14px;color:var(--mute);font-size:16px}
+.wlist{display:grid;gap:8px}
+.wopt{display:flex;align-items:center;gap:12px;padding:12px;background:#0e2216;border:3px solid var(--line);font-family:var(--pix);font-size:10px;text-align:left}
+.wopt:hover{box-shadow:inset 0 0 0 3px var(--amber)}
+.wopt img{width:26px;height:26px;image-rendering:auto}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;z-index:90;background:var(--panel);border:4px solid var(--line);box-shadow:inset 0 0 0 3px var(--moss);padding:12px 16px;font-family:var(--pix);font-size:10px;transition:all .2s;pointer-events:none;max-width:92vw;text-align:center;line-height:1.6}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .5s steps(5),transform .5s steps(5)}
+.reveal.in{opacity:1;transform:none}
+
+@media (max-width:1060px){
+  .nlinks{display:none}
+  .agent-grid{grid-template-columns:1fr}
+  .arena{grid-template-columns:1fr}
+  .steps,.rivals{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  body{font-size:17px}
+  .nav-in{gap:10px}
+  .logo span{display:none}
+  .btn{font-size:11px;padding:12px 14px}
+  .btn.conn .lbl,#xBtn .lbl{display:none}
+  .steps,.rivals,.rules{grid-template-columns:1fr}
+  .inv{grid-template-columns:repeat(2,1fr)}
+  .actions{grid-template-columns:1fr 1fr}
+  .token{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .token .btns{justify-content:center}
+  .hero-hud .pbox{min-width:0;flex:1}
+  .ahud .side{padding:5px 6px}
+  .ahud .nm{font-size:7px}
+  .hero{min-height:640px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="logo" href="#top" aria-label="Canopy Clash home"><canvas class="px" id="logoCv" width="16" height="16" style="width:36px;height:36px"></canvas><span>CANOPY<b> CLASH</b></span></a>
+    <nav class="nlinks" aria-label="Main"><a href="#how">How</a><a href="#agent">Agent</a><a href="#arena">Arena</a><a href="#rivals">Rivals</a><a href="#token"><span class="tk">$CC</span></a></nav>
+    <div class="nav-r">
+      <a class="btn blue" id="xBtn" href="https://x.com/CanopyClashsol" target="_blank" rel="noopener noreferrer" aria-label="Follow Canopy Clash on X"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;flex:none"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span class="lbl">Follow</span></a>
+      <button class="btn conn" id="connBtn"><span aria-hidden="true">◆</span><span class="lbl">Connect</span></button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<!-- ================= HERO ================= -->
+<section class="hero" aria-label="Canopy Clash">
+  <canvas class="px" id="heroCv" aria-label="Pixel jungle with a waterfall, temple ruins and two AI agents clashing in a clearing" role="img"></canvas>
+  <div class="hero-ov">
+    <h1 class="title">CANOPY<br><span class="b">CLASH</span></h1>
+    <p class="subt">Hold <b><span class="tk">$CC</span></b>. Wake your AI agent. Send it into the jungle to clash with rival AIs for <b>amber, vines &amp; relics</b>.</p>
+    <div class="hero-btns">
+      <a class="btn green" href="#arena">⚔ Enter the arena</a>
+      <a class="btn" id="buyHero" href="#">Buy <span class="tk">$CC</span></a>
+    </div>
+  </div>
+  <div class="bubble" id="heroBubble"></div>
+  <div id="heroPops"></div>
+  <div class="hero-hud" aria-hidden="true">
+    <div class="pbox"><div class="hpline"><span id="hhA">AGENT</span><div class="hp"><i id="hhpA" style="width:100%"></i></div></div></div>
+    <div class="pbox"><div class="hpline"><div class="hp r"><i id="hhpB" style="width:100%"></i></div><span id="hhB">RIVAL</span></div></div>
+  </div>
+  <a class="scroll" href="#how">▼ scroll</a>
+</section>
+<div class="vines-top" aria-hidden="true"></div>
+
+<!-- ================= HOW ================= -->
+<section class="sec" id="how">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="tag amber">HOW IT WORKS</span><h2>Four steps into the canopy</h2><p>A pixel jungle auto-battler paired with the <span class="tk">$CC</span> launch on Solana.</p></div>
+    <div class="steps">
+      <article class="pbox step reveal"><span class="n">01</span><canvas class="px" data-icon="coin" width="16" height="16"></canvas><h3>Get <span class="tk">$CC</span></h3><p>Pick up <span class="tk">$CC</span> on Solana. It's your ticket into the jungle.</p></article>
+      <article class="pbox step reveal"><span class="n">02</span><canvas class="px" data-icon="agent" width="16" height="16"></canvas><h3>Wake your agent</h3><p>Connect your wallet. Your AI agent is forged from your address. Same wallet, same agent, every time.</p></article>
+      <article class="pbox step reveal"><span class="n">03</span><canvas class="px" data-icon="sword" width="16" height="16"></canvas><h3>Clash rival AIs</h3><p>Strike, guard and unleash specials against rogue AIs that roam the canopy.</p></article>
+      <article class="pbox step reveal"><span class="n">04</span><canvas class="px" data-icon="relic" width="16" height="16"></canvas><h3>Haul the loot</h3><p>Win to collect amber, vines and relic shards, level up and climb your record.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AGENT ================= -->
+<section class="sec" id="agent">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="tag">YOUR AGENT</span><h2>Forged from your wallet</h2><p>Every wallet wakes a different agent: its class, colours and stats all come from your address.</p></div>
+    <div class="agent-grid">
+      <div class="pbox portrait reveal">
+        <canvas class="px" id="portrait" width="64" height="64" aria-label="Your agent"></canvas>
+        <div class="aname" id="aName">—</div>
+        <div><span class="aclass" id="aClass">—</span> · <span class="muted" id="aLvl">LV 1</span></div>
+        <div class="stats" id="aStats"></div>
+      </div>
+      <div class="ainfo reveal">
+        <div class="pbox stone">
+          <div class="status-row"><span class="tag" id="aBadge">TRIAL AGENT</span><span id="aStatusTxt" class="muted">Connect a wallet to wake the agent tied to your address.</span></div>
+          <div class="status-row" style="margin-top:14px">
+            <button class="btn green sm" id="wakeBtn">◆ Connect &amp; wake agent</button>
+            <button class="btn dark sm" id="rerollBtn">↻ Roll a trial agent</button>
+          </div>
+        </div>
+        <div class="pbox">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span class="tag amber">JUNGLE STASH</span><span class="muted" style="font-size:14px">in-game resources</span></div>
+          <div class="inv">
+            <div class="item"><canvas class="px" data-icon="amber" width="16" height="16"></canvas><b id="invAmber">0</b><span>Amber</span></div>
+            <div class="item"><canvas class="px" data-icon="vine" width="16" height="16"></canvas><b id="invVine">0</b><span>Vines</span></div>
+            <div class="item"><canvas class="px" data-icon="relic" width="16" height="16"></canvas><b id="invRelic">0</b><span>Relic shards</span></div>
+            <div class="item"><canvas class="px" data-icon="trophy" width="16" height="16"></canvas><b id="invWins">0</b><span>Wins</span></div>
+          </div>
+          <div style="margin-top:14px" class="xp"><i id="xpBar" style="width:0"></i><span id="xpTxt">XP 0 / 100</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ARENA ================= -->
+<section class="sec" id="arena">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="tag red">CLASH ARENA</span><h2>Fight for the canopy</h2><p>Pick a rival, then choose your moves or let your agent fight on auto.</p></div>
+    <div class="arena">
+      <div class="reveal">
+        <div class="stage">
+          <canvas class="px" id="arenaCv" width="320" height="180" aria-label="Battle arena"></canvas>
+          <div class="ahud">
+            <div class="side"><div class="nm" id="anA">AGENT</div><div class="hpline"><div class="hp"><i id="ahpA" style="width:100%"></i></div><span id="ahpAT">0</span></div></div>
+            <div class="side r"><div class="nm" id="anB">RIVAL</div><div class="hpline"><span id="ahpBT">0</span><div class="hp r"><i id="ahpB" style="width:100%"></i></div></div></div>
+          </div>
+          <div class="bubble" id="arenaBubble"></div>
+          <div id="arenaPops"></div>
+          <div class="result" id="result" hidden><div class="pbox"><h3 id="resT">VICTORY!</h3><p id="resP" class="muted" style="margin:0"></p><div class="loot" id="resLoot"></div><button class="btn green" id="againBtn">⚔ Clash again</button></div></div>
+        </div>
+        <div class="actions">
+          <button class="btn red" data-act="strike">⚔ Strike<small>basic hit</small></button>
+          <button class="btn blue" data-act="guard">🛡 Guard<small>block + recover</small></button>
+          <button class="btn" data-act="special" id="spBtn">✦ Special<small id="spTxt">ready</small></button>
+          <button class="btn dark" id="autoBtn" aria-pressed="false">▶ Auto<small>let it fight</small></button>
+        </div>
+      </div>
+      <aside class="side-panel reveal">
+        <div class="pbox"><div style="margin-bottom:10px"><span class="tag">CHOOSE RIVAL</span></div><div class="rival-pick" id="rivalPick"></div></div>
+        <div class="pbox"><div style="margin-bottom:10px"><span class="tag amber">BATTLE LOG</span></div><div class="blog" id="blog" role="log" aria-live="polite"></div></div>
+        <div class="record"><div><b id="recW">0</b><span>wins</span></div><div><b id="recL">0</b><span>losses</span></div><div><b id="recS">0</b><span>streak</span></div></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RIVALS ================= -->
+<section class="sec" id="rivals">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="tag red">BESTIARY</span><h2>Rival AIs of the jungle</h2><p>Rogue agents that went feral in the canopy. Each one fights a little differently.</p></div>
+    <div class="rivals" id="rivalCards"></div>
+  </div>
+</section>
+
+<!-- ================= RULES ================= -->
+<section class="sec" id="rules">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="tag water">RULES OF THE CANOPY</span><h2>What your agent can &amp; can't do</h2></div>
+    <div class="rules">
+      <div class="pbox can reveal"><h3 style="color:var(--leaf)">✔ CAN</h3><ul id="canList"></ul></div>
+      <div class="pbox cant reveal"><h3 style="color:#ff8a74">✖ CAN'T</h3><ul id="cantList"></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TOKEN ================= -->
+<section class="sec" id="token">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="tag amber"><span class="tk">$CC</span></span><h2>The token of the canopy</h2></div>
+    <div class="pbox wood token reveal">
+      <canvas class="px" id="coinCv" width="32" height="32" aria-hidden="true"></canvas>
+      <div>
+        <h3><span class="tk">$CC</span></h3>
+        <p>Canopy Clash's token on Solana. Holding <span class="tk">$CC</span> marks your agent as a <b>holder agent</b> in the arena.</p>
+        <button class="ca" id="caBox" type="button"><span id="caText">Contract address drops on our X</span><b>⧉</b></button>
+        <div class="btns"><a class="btn" id="buyBtn" href="#">Buy <span class="tk">$CC</span></a><a class="btn green" id="chartBtn" href="#">Chart</a><a class="btn dark" id="xBtn2" href="#">Follow on X</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div><a class="logo" href="#top"><span>CANOPY<b> CLASH</b></span></a><p class="muted" style="margin:10px 0 0;font-size:15px"><span class="tk">$CC</span> · AI agents clash in the jungle · <a href="#" id="xFoot" style="color:var(--leaf)">@CanopyClashsol</a></p></div>
+    <p class="disc"><span class="tk">$CC</span> is a community meme token on Solana. Canopy Clash is a free browser mini-game. Amber, vines, relic shards, XP and records are in-game items saved in your browser; they are not tokens, have no cash value and are never paid out. Connecting a wallet only reads your public address (and your <span class="tk">$CC</span> balance, if the token is live); nothing is signed. Not financial advice. Meme tokens are very risky.</p>
+  </div>
+</footer>
+
+<div class="modal" id="wModal" hidden role="dialog" aria-modal="true" aria-labelledby="wmT">
+  <div class="pbox"><h3 id="wmT">Connect a Solana wallet</h3><p>Read-only: shares your public address so we can forge your agent. Nothing is signed, no transaction is sent.</p><div class="wlist" id="wList"></div><div style="margin-top:14px;text-align:right"><button class="btn dark sm" id="wmX">Close</button></div></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+'use strict';
+/* =====================================================================
+   EDIT THESE when you launch (leave '' until ready)
+   ===================================================================== */
+var CONFIG = {
+  tokenCA:  '',                                  // $CC mint address (enables the holder check)
+  buyUrl:   '',                                  // e.g. https://pump.fun/coin/<CA>
+  chartUrl: '',                                  // e.g. https://dexscreener.com/solana/<CA>
+  xUrl:     'https://x.com/CanopyClashsol',
+  rpcUrl:   'https://api.mainnet-beta.solana.com', // Solana RPC used to read $CC balance
+  minHold:  1,                                   // $CC needed for "holder agent" status
+  canDo:  ['Fight rival AIs in the arena on your command (or on auto)','Collect in-game amber, vines and relic shards','Level up and keep its record in your browser','Wake up identical on any device with the same wallet'],
+  cantDo: ['Touch your wallet, sign anything or move your tokens','Ask for your seed phrase, ever','Turn in-game loot into tokens or money','Promise you returns']
+};
+
+/* ---------- utils ---------- */
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+var store={get:function(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function toast(t){var e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){e.classList.remove('on')},2400)}
+function sleep(ms){return new Promise(function(r){setTimeout(r,reduce?Math.min(ms,60):ms)})}
+
+/* links */
+function wire(el,url,label){if(!el)return;if(url){el.href=url;el.target='_blank';el.rel='noopener noreferrer'}else el.addEventListener('click',function(e){e.preventDefault();toast(label+' link drops at launch')})}
+['#xBtn','#xBtn2','#xFoot'].forEach(function(s){wire($(s),CONFIG.xUrl,'X')});['#buyHero','#buyBtn'].forEach(function(s){wire($(s),CONFIG.buyUrl,'Buy')});
+wire($('#chartBtn'),CONFIG.chartUrl||(CONFIG.tokenCA?'https://dexscreener.com/solana/'+CONFIG.tokenCA:''),'Chart');
+if(CONFIG.tokenCA)$('#caText').textContent=CONFIG.tokenCA;
+$('#caBox').addEventListener('click',function(){if(!CONFIG.tokenCA){toast('CA not posted yet. Only trust our official X.');return}try{navigator.clipboard.writeText(CONFIG.tokenCA)}catch(e){}toast('CA copied!')});
+addEventListener('scroll',function(){$('#nav').classList.toggle('solid',scrollY>30)},{passive:true});
+$('#canList').innerHTML=CONFIG.canDo.map(function(r){return '<li><i>✓</i>'+esc(r)+'</li>'}).join('');
+$('#cantList').innerHTML=CONFIG.cantDo.map(function(r){return '<li><i>✕</i>'+esc(r)+'</li>'}).join('');
+
+/* =====================================================================
+   PIXEL DRAWING PRIMITIVES (low-res canvases, upscaled with CSS)
+   ===================================================================== */
+function P(x,X,Y,W,H,c){x.fillStyle=c;x.fillRect(Math.round(X),Math.round(Y),W,H)}
+function disc(x,cx,cy,r,c){x.fillStyle=c;for(var yy=-r;yy<=r;yy++){var w=Math.floor(Math.sqrt(r*r-yy*yy)+.35);x.fillRect(Math.round(cx-w),Math.round(cy+yy),w*2+1,1)}}
+function ell(x,cx,cy,rx,ry,c){x.fillStyle=c;for(var yy=-ry;yy<=ry;yy++){var w=Math.floor(rx*Math.sqrt(Math.max(0,1-(yy*yy)/(ry*ry)))+.35);x.fillRect(Math.round(cx-w),Math.round(cy+yy),w*2+1,1)}}
+function leaf(x,cx,cy,len,wid,ang,c,c2){var ca=Math.cos(ang),sa=Math.sin(ang),R=len;for(var yy=-R;yy<=R;yy++)for(var xx=-R;xx<=R;xx++){var u=xx*ca+yy*sa,v=-xx*sa+yy*ca;if(u<0||u>len)continue;var hw=wid*Math.sin(Math.PI*u/len);if(Math.abs(v)<=hw){x.fillStyle=(c2&&Math.abs(v)<.8)?c2:c;x.fillRect(Math.round(cx+xx),Math.round(cy+yy),1,1)}}}
+function noise1(seed){var r=rng(seed),v=[];for(var i=0;i<64;i++)v.push(r());return function(t){var i=Math.floor(t),f=t-i,a=v[(i%64+64)%64],b=v[((i+1)%64+64)%64];f=f*f*(3-2*f);return a+(b-a)*f}}
+
+/* ---------- fighters ----------
+   Drawn part by part on the low-res canvas: black outline pass, then fill pass. */
+function parts(x,list,ox,oy,flip,flash){
+  list.forEach(function(p){var X=flip?ox-(p[0]+p[2]):ox+p[0];P(x,X-1,oy+p[1]-1,p[2]+2,p[3]+2,'#0a120c')});
+  list.forEach(function(p){var X=flip?ox-(p[0]+p[2]):ox+p[0];P(x,X,oy+p[1],p[2],p[3],flash?'#ffffff':p[4])})}
+var CLASSES={
+  Ranger:{w:'sword',hp:1,atk:1,def:1,spd:1.1,desc:'balanced blade fighter'},
+  Brute:{w:'hammer',hp:1.25,atk:1.15,def:1.2,spd:.75,desc:'slow, heavy hitter'},
+  Shaman:{w:'staff',hp:.95,atk:.95,def:.9,spd:1,desc:'guards heal extra'},
+  Scout:{w:'daggers',hp:.85,atk:1,def:.85,spd:1.35,desc:'fast, crits often'}
+};
+var ARMOR=[['#e8eef2','#aebac4'],['#f5b942','#c98522'],['#6bd16b','#3f9a3f'],['#5fd3e6','#2f97a8'],['#e0503c','#9a2f22'],['#c49bff','#8a5cd6'],['#d8c7a0','#a8936a']];
+var CAPES=['#e0503c','#3f6fd6','#f5b942','#2d6a3f','#a46bff','#e07a2c','#1f8f8f'];
+var VISOR=['#5ff2ff','#9be36b','#ffd75e','#ff7ad1','#ff8a4a'];
+function drawAgent(x,a,fx,fy,t,st){
+  st=st||{};var flip=!!st.flip,bob=st.dead?0:Math.round(Math.sin(t/260)*0.6),lunge=st.lunge||0,hurt=st.hurt||0,dx=Math.round(lunge*(flip?-1:1))-Math.round(hurt*(flip?-1:1)*2);
+  var ox=fx+dx,oy=fy+bob,ar=ARMOR[a.armor],cape=CAPES[a.cape],vis=VISOR[a.visor];
+  if(st.dead){x.globalAlpha=.55}
+  // shadow
+  x.fillStyle='rgba(0,0,0,.28)';x.fillRect(fx-7,fy,14,2);
+  var stepA=st.walk?Math.round(Math.sin(t/80)):0;
+  var capeW=Math.round(Math.sin(t/300)*1);
+  var L=[[-7-capeW,-15,2,12,cape],[-6,-4,2,2,cape],[-4,-7,3,6,'#3a3046'],[1,-7+stepA,3,6,'#3a3046'],[-5,-2,4,2,'#2a1d14'],[1,-2+stepA,4,2,'#2a1d14'],
+    [-4,-15,8,9,ar[0]],[-4,-9,8,2,'#5a3a22'],[-1,-9,2,2,'#f5b942'],[-6,-16,3,3,ar[1]],[3,-16,3,3,ar[1]],[-1,-14,2,4,ar[1]],
+    [-2,-17,4,1,'#2b3440'],
+    [-4,-26,9,9,ar[0]],[-4,-26,9,2,ar[1]],[-2,-22,6,2,'#13202a'],[-1,-19,4,1,ar[1]],[-3,-29,2,3,'#6bd16b'],[0,-30,2,4,'#9be36b'],[2,-28,2,2,'#6bd16b']];
+  if(a.cls==='Brute')L.push([-7,-17,4,4,ar[1]],[3,-17,4,4,ar[1]]);
+  if(a.cls==='Shaman')L.push([-6,-27,13,2,'#7a4e2a'],[-3,-29,7,2,'#7a4e2a']);
+  if(a.cls==='Scout')L.push([-5,-26,10,3,'#2d6a3f']);
+  parts(x,L,ox,oy,flip,st.flash);
+  // visor glow
+  var vx=flip?ox-4:ox-2;P(x,vx,oy-22,6,1,vis);P(x,flip?ox-3:ox+2,oy-22,1,1,'#fff');P(x,flip?ox:ox+0,oy-21,1,1,vis);P(x,flip?ox-4:ox+3,oy-21,1,1,vis);
+  // weapon arm
+  var ang=st.swing!=null?st.swing:(-0.7+Math.sin(t/400)*.08);if(flip)ang=Math.PI-ang;
+  var hx=flip?ox-5:ox+5,hy=oy-11;P(x,hx-2,hy-1,4,4,'#0a120c');P(x,hx-1,hy,2,2,ar[1]);
+  weapon(x,a.cls,hx,hy,ang,st.flash);
+  x.globalAlpha=1;
+}
+function weapon(x,cls,hx,hy,ang,flash){
+  var ca=Math.cos(ang),sa=Math.sin(ang);
+  function line(len,from,c,w){for(var i=from;i<len;i++){var px=Math.round(hx+ca*i),py=Math.round(hy+sa*i);x.fillStyle=c;x.fillRect(px-(w>1?1:0),py-(w>1?1:0),w,w)}}
+  var steel=flash?'#fff':'#dfe7ee';
+  if(cls==='Ranger'){line(4,0,'#7a4e2a',2);line(15,4,'#0a120c',3);line(15,4,steel,1);P(x,Math.round(hx+ca*4)-2,Math.round(hy+sa*4)-2,4,4,'#f5b942')}
+  else if(cls==='Brute'){line(12,0,'#7a4e2a',2);var ex=Math.round(hx+ca*12),ey=Math.round(hy+sa*12);P(x,ex-4,ey-4,9,9,'#0a120c');P(x,ex-3,ey-3,7,7,'#8a96a3');P(x,ex-3,ey-3,7,2,'#c3ccd4')}
+  else if(cls==='Shaman'){line(16,-3,'#0a120c',3);line(16,-3,'#9b6a3a',1);var sx=Math.round(hx+ca*16),sy=Math.round(hy+sa*16);P(x,sx-3,sy-3,6,6,'#0a120c');P(x,sx-2,sy-2,4,4,'#5ff2ff');P(x,sx-1,sy-1,2,2,'#fff')}
+  else{line(8,0,'#0a120c',3);line(8,2,steel,1);var a2=ang+0.6,c2=Math.cos(a2),s2=Math.sin(a2);for(var i=2;i<8;i++){x.fillStyle='#0a120c';x.fillRect(Math.round(hx+c2*i)-1,Math.round(hy+s2*i)-1,3,3)}for(i=2;i<8;i++){x.fillStyle=steel;x.fillRect(Math.round(hx+c2*i),Math.round(hy+s2*i),1,1)}}
+}
+var RIVALS=[
+  {id:'grunt',name:'Moss Grunt',col:['#6aa84f','#3e7a2e'],eye:'#ff3b30',w:'axe',scale:1,hp:72,atk:10,def:4,spd:5,lore:'A rusty jungle bot overgrown with moss. Swings first, thinks never.',trait:'balanced',taunts:['Don\'t even think about running!','Your amber is MINE.','Grrk! Fresh circuits!']},
+  {id:'vine',name:'Vine Strangler',col:['#3fb5a0','#24786a'],eye:'#ffe14d',w:'whip',scale:1,hp:64,atk:9,def:3,spd:8,lore:'Wraps targets in living vines. Every hit leaves you poisoned.',trait:'poison',taunts:['Hold still… let the vines hug you.','Ssssss. Nowhere to go.','The jungle wants you.']},
+  {id:'brute',name:'Totem Brute',col:['#c27a3a','#8a4f1f'],eye:'#5ff2ff',w:'club',scale:1.3,hp:112,atk:13,def:6,spd:3,lore:'A temple guardian carved from stone and old code. Slow. Very hard.',trait:'tank',taunts:['THE TEMPLE… DOES NOT… FALL.','You are… very small.','BONK.']},
+  {id:'glitch',name:'Glitch Ape',col:['#9a6bff','#5f3fb3'],eye:'#ff7ad1',w:'claws',scale:1,hp:58,atk:12,def:2,spd:10,lore:'A corrupted monkey-bot that flickers out of the way of your attacks.',trait:'dodge',taunts:['ook ook 0x00K!','c4tch m3 1f u c4n','*bzzzt* too slow!']}
+];
+function drawRival(x,r,fx,fy,t,st){
+  st=st||{};var flip=st.flip!==false,s=r.scale,bob=st.dead?0:Math.round(Math.sin(t/220+1)*0.7),lunge=st.lunge||0,hurt=st.hurt||0;
+  var ox=fx+Math.round(lunge*(flip?-1:1))-Math.round(hurt*(flip?-1:1)*2),oy=fy+bob,c=r.col;
+  if(r.id==='glitch'&&!st.dead&&(Math.floor(t/90)%23===0))ox+=(Math.floor(t/30)%2?2:-2);
+  if(st.dead)x.globalAlpha=.55;
+  x.fillStyle='rgba(0,0,0,.28)';x.fillRect(fx-8*s,fy,16*s,2);
+  function S(v){return Math.round(v*s)}
+  var stepA=st.walk?Math.round(Math.sin(t/80)):0;
+  var L=[[S(-5),S(-6),S(3),S(6),c[1]],[S(2),S(-6)+stepA,S(3),S(6),c[1]],[S(-6),S(-2),S(4),S(2),'#2a1d14'],[S(2),S(-2)+stepA,S(4),S(2),'#2a1d14'],
+    [S(-7),S(-15),S(14),S(10),c[0]],[S(-7),S(-10),S(14),S(2),'#6b4a2a'],[S(-2),S(-14),S(3),S(4),c[1]],
+    [S(-6),S(-23),S(11),S(9),c[0]],[S(-9),S(-21),S(3),S(2),c[0]],[S(5),S(-21),S(3),S(2),c[0]],[S(-3),S(-16),S(6),S(1),'#e9e2c8']];
+  if(r.id==='brute')L.push([S(-7),S(-26),S(13),S(4),'#e0503c'],[S(-5),S(-28),S(3),S(3),'#f5b942'],[S(2),S(-28),S(3),S(3),'#f5b942']);
+  if(r.id==='vine')L.push([S(-8),S(-13),S(2),S(8),'#2d6a3f'],[S(6),S(-17),S(2),S(10),'#2d6a3f']);
+  if(r.id==='glitch')L.push([S(-1),S(-27),S(2),S(4),c[1]]);
+  // flip: rivals face left by default (mirror the part list)
+  parts(x,L,ox,oy,flip,st.flash);
+  // eyes
+  var e1=flip?ox-S(-3)-S(2):ox+S(-3),e2=flip?ox-S(1)-S(2):ox+S(1);P(x,e1,oy+S(-20),S(2),Math.max(1,S(1)),r.eye);P(x,e2,oy+S(-20),S(2),Math.max(1,S(1)),r.eye);
+  // weapon
+  var ang=st.swing!=null?st.swing:(-0.9+Math.sin(t/350)*.1);var a2=flip?Math.PI-ang:ang;var hx=flip?ox-S(7):ox+S(7),hy=oy+S(-10);
+  var ca=Math.cos(a2),sa=Math.sin(a2);function line(len,c,w){for(var i=0;i<len;i++){x.fillStyle=c;x.fillRect(Math.round(hx+ca*i)-(w>1?1:0),Math.round(hy+sa*i)-(w>1?1:0),w,w)}}
+  if(r.w==='axe'){line(S(12),'#0a120c',3);line(S(12),'#8a5323',1);var ex=Math.round(hx+ca*S(11)),ey=Math.round(hy+sa*S(11));P(x,ex-3,ey-3,7,6,'#0a120c');P(x,ex-2,ey-2,5,4,st.flash?'#fff':'#c3ccd4')}
+  else if(r.w==='club'){line(S(13),'#0a120c',S(4));line(S(13),'#7a5634',S(2));var ex2=Math.round(hx+ca*S(13)),ey2=Math.round(hy+sa*S(13));P(x,ex2-S(4),ey2-S(4),S(8),S(8),'#0a120c');P(x,ex2-S(3),ey2-S(3),S(6),S(6),'#9b6a3a')}
+  else if(r.w==='whip'){for(var i=0;i<16;i++){var px=Math.round(hx+ca*i),py=Math.round(hy+sa*i+Math.sin(i/2+t/120)*2);x.fillStyle='#0a120c';x.fillRect(px-1,py-1,3,3)}for(i=0;i<16;i++){px=Math.round(hx+ca*i);py=Math.round(hy+sa*i+Math.sin(i/2+t/120)*2);x.fillStyle=i%4?'#3f8a46':'#9be36b';x.fillRect(px,py,1,1)}}
+  else{for(var k=0;k<3;k++){var aa=a2-0.35+k*0.35,cc=Math.cos(aa),ss=Math.sin(aa);for(i=2;i<7;i++){x.fillStyle='#0a120c';x.fillRect(Math.round(hx+cc*i)-1,Math.round(hy+ss*i)-1,3,3)}for(i=2;i<7;i++){x.fillStyle=st.flash?'#fff':'#ff7ad1';x.fillRect(Math.round(hx+cc*i),Math.round(hy+ss*i),1,1)}}}
+  x.globalAlpha=1;
+}
+
+/* ---------- jungle background ---------- */
+function makeJungle(W,H,seed){
+  var G=Math.round(H*.74),r=rng(seed),n1=noise1(seed+1),n2=noise1(seed+2),n3=noise1(seed+3);
+  function layer(){var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d');x.imageSmoothingEnabled=false;return [c,x]}
+  // FAR: sky, clouds, mountains, temple
+  var F=layer(),x=F[1];
+  var sky=['#c6ecf2','#ace2ec','#93d6e4','#7bc8d9','#66b7cb','#56a5ba'];for(var y=0;y<G;y++){var bi=Math.min(sky.length-1,Math.floor(y/(H*.62)*sky.length)),f=(y/(H*.62)*sky.length)%1;for(var xx=0;xx<W;xx++){var c=sky[bi];if(f>.75&&((xx+y)%2===0)&&bi<sky.length-1)c=sky[bi+1];if(xx===0||c!==sky[bi]||(xx+y)%2===0){x.fillStyle=c;x.fillRect(xx,y,1,1)}}}
+  for(var k=0;k<6;k++){var cx=r()*W,cy=8+r()*H*.22,cw=14+r()*26;ell(x,cx,cy,cw,4,'#e6f6f9');ell(x,cx-cw*.3,cy-3,cw*.45,4,'#ffffff');ell(x,cx+cw*.25,cy-2,cw*.4,3,'#f4fbfc')}
+  for(xx=0;xx<W;xx++){var h1=H*.30+n1(xx/26)*H*.16-Math.abs(Math.sin(xx/19))*H*.05;P(x,xx,h1,1,G-h1,'#8bb4c2');if((xx+Math.round(h1))%5===0)P(x,xx,h1,1,2,'#b8d6df')}
+  for(xx=0;xx<W;xx++){var h2=H*.40+n2(xx/18)*H*.12;P(x,xx,h2,1,G-h2,'#6c97a7')}
+  for(y=Math.round(H*.48);y<Math.round(H*.56);y+=2){x.fillStyle='rgba(230,246,250,.25)';x.fillRect(0,y,W,1)}
+  // temple ruin (right)
+  var tx=Math.round(W*.74),ty=Math.round(H*.36);
+  [[0,0,34,6],[3,6,28,8],[6,14,22,8],[9,22,16,8]].forEach(function(b,i){P(x,tx-b[2]/2+0,ty+30-b[1]-b[3],b[2],b[3],i%2?'#4f6f66':'#466359')});
+  P(x,tx-4,ty-2,8,8,'#3e5a51');P(x,tx-2,ty+1,4,5,'#22332e');for(k=0;k<4;k++){P(x,tx-14+k*8,ty+19,3,4,'#22332e')}
+  for(k=0;k<7;k++){var vx=tx-16+k*5+Math.round(r()*3),vl=4+Math.round(r()*10);P(x,vx,ty+4+k%3*6,1,vl,'#2f5a35')}
+  // MID: canopy + cliff + waterfall area
+  var M=layer();x=M[1];
+  var canTop=[];for(xx=0;xx<W;xx++)canTop.push(Math.round(H*.50+n3(xx/14)*H*.10));
+  for(xx=0;xx<W;xx++)P(x,xx,canTop[xx],1,G-canTop[xx]+4,'#1d4a2d');
+  for(k=0;k<W/3;k++){var bx=r()*W,by=canTop[Math.floor(bx)]+2+r()*10,br=3+Math.round(r()*6);disc(x,bx,by,br,'#245a35');disc(x,bx-1,by-1,br-2,'#2e6c3f');if(r()<.5)disc(x,bx-2,by-2,Math.max(1,br-4),'#3f8a4a')}
+  for(k=0;k<6;k++){var px=Math.round(r()*W),ph=G-canTop[px];var trunkTop=canTop[px]+4;P(x,px,trunkTop,2,G-trunkTop,'#2b2117')}
+  // cliff + waterfall
+  var wx0=Math.round(W*.15),wy0=Math.round(H*.30);
+  for(y=wy0;y<G+2;y+=5)for(xx=wx0-10;xx<wx0+44;xx+=8){var off=(Math.floor(y/5)%2)*4;var bxx=xx+off;if(bxx>wx0+8&&bxx<wx0+26)continue;P(x,bxx,y,8,5,(bxx+y)%3?'#6e4d2f':'#5d3f26');P(x,bxx,y,8,1,'#8a6440');P(x,bxx,y+4,8,1,'#3b2817')}
+  for(k=0;k<14;k++)disc(x,wx0-8+r()*52,wy0-2+r()*6,2+Math.round(r()*4),k%2?'#2e6c3f':'#3f8a4a');
+  var falls={x:wx0+9,y:wy0+3,w:16,h:G-wy0-5};
+  // NEAR: trunks, frame canopy, ground, rocks, crates, foreground leaves
+  var N=layer();x=N[1];
+  // ground
+  for(y=G;y<H;y++)for(xx=0;xx<W;xx++){var nn=Math.sin(xx*.21+y*.7)+Math.sin(xx*.05-y*.3)*1.5,c2='#b9733c';if(nn>1.4)c2='#c98444';else if(nn<-1.6)c2='#a4612f';if(y>H-6)c2='#94562a';x.fillStyle=c2;x.fillRect(xx,y,1,1)}
+  for(xx=0;xx<W;xx++){var gh=2+Math.round(Math.abs(Math.sin(xx*.7))*3+r()*2);P(x,xx,G-gh+2,1,gh,(xx%3)?'#3e7d3a':'#5aa04a');if(r()<.2)P(x,xx,G-gh,1,2,'#7cc35a')}
+  for(k=0;k<9;k++){var rx=r()*W,ry=G+6+r()*(H-G-12);ell(x,rx,ry,2+r()*3,1+r()*1.5,'#94562a')}
+  function rock(X,Y,w,h){ell(x,X,Y,w+1,h+1,'#1f1a14');ell(x,X,Y,w,h,'#7d8a87');ell(x,X-1,Y-1,w-2,h-2,'#9aa6a2')}
+  rock(W*.29,G+2,7,4);rock(W*.86,G+4,9,5);rock(W*.08,G+18,6,3);
+  function crate(X,Y){P(x,X-1,Y-1,14,12,'#1a120a');P(x,X,Y,12,10,'#9b6a3a');P(x,X,Y,12,1,'#c08a52');P(x,X,Y+4,12,1,'#6b4423');P(x,X,Y+9,12,1,'#6b4423');P(x,X+1,Y+1,1,8,'#6b4423');P(x,X+10,Y+1,1,8,'#6b4423')}
+  crate(Math.round(W*.32),G-8);crate(Math.round(W*.32)+12,G-8);crate(Math.round(W*.32)+6,G-18);
+  // big trunks
+  function trunk(X,w,lean){for(y=0;y<H;y++){var xo=Math.round(X+lean*(1-y/H)*12);P(x,xo,y,w,1,'#2e2116');if(y%7===0)P(x,xo+2,y,w-5,1,'#3f2e1e');P(x,xo+w-2,y,2,1,'#1c140d');P(x,xo+1,y,1,1,'#4a3624')}
+    for(k=0;k<3;k++){var rx2=X+(k-1)*8;ell(x,rx2+w/2,H-3,6,3,'#2e2116')}}
+  trunk(-4,20,1);trunk(W-18,22,-1);
+  // top canopy frame
+  var topN=noise1(seed+9);for(xx=0;xx<W;xx++){var th=8+Math.round(topN(xx/9)*14)+(xx<40||xx>W-40?14:0);P(x,xx,0,1,th,'#143521');}
+  for(k=0;k<W/2.5;k++){var lx=r()*W,ly=r()*(20+(lx<40||lx>W-40?12:0));disc(x,lx,ly,2+Math.round(r()*4),r()<.5?'#1b4429':'#245a35');if(r()<.4)disc(x,lx-1,ly-1,1+Math.round(r()*2),'#3f8a4a')}
+  // arching branch
+  for(xx=10;xx<W*.45;xx++){var by2=Math.round(18+Math.sin(xx/W*3.2)*-8+xx*.04);P(x,xx,by2,1,3,'#2e2116');P(x,xx,by2,1,1,'#4a3624')}
+  // foreground leaves
+  var FG=layer(),fx=FG[1];
+  function bush(X,Y,flipL){var cols=[['#1d4a2d','#2d6a3f'],['#245a35','#3f8a4a'],['#2d6a3f','#5aa04a']];for(var i=0;i<7;i++){var a=(flipL?Math.PI:0)+(flipL?1:-1)*(0.3+i*0.35),cl=cols[i%3];leaf(fx,X,Y,16+((i*7)%6),4+(i%2),a- (flipL?0:Math.PI*0) ,cl[0],cl[1])}}
+  bush(-2,H+2,false);bush(W+2,H+2,true);
+  for(k=0;k<3;k++){var ffx=W*.55+k*10,ffy=H+3;leaf(fx,ffx,ffy,10,3,-Math.PI/2-0.6+k*0.6,'#245a35','#3f8a4a')}
+  P(fx,W-26,H-14,3,3,'#e0503c');P(fx,W-25,H-15,1,1,'#ff9a8a');
+  // vines (anchor points, drawn animated)
+  var vines=[];for(k=0;k<Math.round(W/22);k++){var vx2=Math.round(r()*W);vines.push({x:vx2,y:Math.round(topN(vx2/9)*14+6),len:20+Math.round(r()*55),ph:r()*6})}
+  // fireflies
+  var flies=[];for(k=0;k<14;k++)flies.push({x:r()*W,y:H*.35+r()*H*.5,ph:r()*6,sp:.3+r()*.6});
+  return {W:W,H:H,G:G,far:F[0],mid:M[0],near:N[0],fg:FG[0],falls:falls,vines:vines,flies:flies};
+}
+function drawJungle(x,J,t,px){
+  px=px||0;var W=J.W,H=J.H;
+  x.drawImage(J.far,Math.round(px*.25),0);x.drawImage(J.mid,Math.round(px*.5),0);
+  // waterfall animation
+  var f=J.falls,ox=Math.round(px*.5);
+  for(var yy=0;yy<f.h;yy++)for(var xx=0;xx<f.w;xx++){var v=(((yy*1.0-t/40+xx*3)%9)+9)%9;var c=v<2?'#e6fbff':v<5?'#7fd8ef':'#4fbfe0';if(xx===0||xx===f.w-1)c='#3aa4cc';x.fillStyle=c;x.fillRect(f.x+xx+ox,f.y+yy,1,1)}
+  for(var k=0;k<10;k++){var fx=f.x-4+((k*7+Math.floor(t/90))%(f.w+8)),fy=f.y+f.h-2+Math.round(Math.sin(t/120+k)*1.5);x.fillStyle=k%2?'#ffffff':'#c9f3fb';x.fillRect(fx+ox,fy,2,2)}
+  x.drawImage(J.near,0,0);
+  // vines
+  J.vines.forEach(function(v){for(var i=0;i<v.len;i++){var sw=Math.round(Math.sin(t/900+v.ph+i/14)*(i/v.len)*4);x.fillStyle=i%9===0?'#4c9a4c':'#2a5a32';x.fillRect(v.x+sw,v.y+i,1,1);if(i%9===4){x.fillStyle='#3f8a46';x.fillRect(v.x+sw+1,v.y+i,2,1)}}});
+  // fireflies
+  J.flies.forEach(function(fl){var a=(Math.sin(t/300*fl.sp+fl.ph)+1)/2;if(a<.4)return;x.fillStyle=a>.8?'#f8ffb0':'#c8f06b';x.fillRect(Math.round(fl.x+Math.sin(t/1500+fl.ph)*6),Math.round(fl.y+Math.cos(t/1300+fl.ph)*4),1,1)});
+}
+
+/* ---------- icons (16x16) ---------- */
+var ICON={
+  coin:function(x){disc(x,8,8,7,'#0a120c');disc(x,8,8,6,'#f5b942');disc(x,7,7,4,'#ffd75e');P(x,6,4,4,1,'#fff3b0');P(x,7,5,2,6,'#b06a12');P(x,5,7,6,2,'#b06a12')},
+  agent:function(x){drawAgent(x,{cls:'Ranger',armor:0,cape:0,visor:0},8,15,0,{})},
+  sword:function(x){for(var i=0;i<11;i++){P(x,3+i-1,12-i-1,3,3,'#0a120c')}for(i=0;i<11;i++)P(x,3+i,12-i,1,1,'#dfe7ee');P(x,2,10,6,2,'#f5b942');P(x,4,12,2,3,'#7a4e2a')},
+  relic:function(x){var pts=[[8,1],[13,7],[8,15],[3,7]];x.fillStyle='#0a120c';for(var y=0;y<16;y++){var w=y<7?Math.round(y*5/6):Math.round((15-y)*5/8);x.fillRect(8-w-1,y,w*2+3,1)}for(y=1;y<15;y++){w=y<7?Math.round(y*5/6):Math.round((15-y)*5/8);x.fillStyle=y<7?'#9be8ff':'#5fd3e6';x.fillRect(8-w,y,w*2+1,1)}P(x,6,4,2,3,'#fff')},
+  amber:function(x){ell(x,8,9,5,6,'#0a120c');ell(x,8,9,4,5,'#e08a1e');ell(x,7,8,2,3,'#f5b942');P(x,6,6,1,2,'#fff3b0');P(x,8,10,2,1,'#6b3510')},
+  vine:function(x){for(var i=0;i<14;i++){var xx=8+Math.round(Math.sin(i/2.2)*3);P(x,xx-1,1+i,3,1,'#0a120c');P(x,xx,1+i,1,1,'#3f8a46')}leaf(x,5,5,5,2,Math.PI*.9,'#6bd16b');leaf(x,10,10,5,2,0.2,'#6bd16b');leaf(x,5,12,4,2,Math.PI*.8,'#9be36b')},
+  trophy:function(x){P(x,3,2,10,7,'#0a120c');P(x,4,3,8,5,'#f5b942');P(x,1,3,3,4,'#0a120c');P(x,12,3,3,4,'#0a120c');P(x,2,4,1,2,'#f5b942');P(x,13,4,1,2,'#f5b942');P(x,6,9,4,3,'#0a120c');P(x,7,9,2,2,'#c98522');P(x,4,12,8,3,'#0a120c');P(x,5,12,6,2,'#9b6a3a');P(x,5,3,2,3,'#ffe08a')}
+};
+function paintIcon(cv,name){var x=cv.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,cv.width,cv.height);ICON[name](x)}
+$$('canvas[data-icon]').forEach(function(c){paintIcon(c,c.dataset.icon)});
+(function(){var x=$('#logoCv').getContext('2d');P(x,0,0,16,16,'#0d1f16');drawAgent(x,{cls:'Ranger',armor:0,cape:0,visor:0},7,16,0,{})})();
+(function(){var cv=$('#coinCv'),x=cv.getContext('2d');function d(t){x.clearRect(0,0,32,32);var w=Math.max(1,Math.round(Math.abs(Math.cos(t/600))*13));ell(x,16,16,w+1,14,'#0a120c');ell(x,16,16,w,13,'#f5b942');if(w>4){ell(x,16,16,w-2,11,'#ffd75e');P(x,16-Math.min(4,w-3),10,2*Math.min(4,w-3),2,'#b06a12');P(x,16-Math.min(4,w-3),15,2*Math.min(4,w-3),2,'#b06a12');P(x,16-Math.min(4,w-3),20,2*Math.min(4,w-3),2,'#b06a12');P(x,16-Math.min(4,w-3),10,2,12,'#b06a12')}else P(x,16-w,4,w*2,24,'#c98522')}
+  (function l(t){requestAnimationFrame(l);if(!document.hidden)d(reduce?0:t)})(0)})();
+
+/* =====================================================================
+   AGENT GENERATION
+   ===================================================================== */
+var PRE=['Moss','Fern','Vine','Ember','Tide','Root','Thorn','Jade','Amber','Canopy','Mango','Liana','Bamboo','Orchid'];
+var SUF=['Byte','Fang','Runner','Warden','Echo','Unit','Strider','Claw','Spark','Drift'];
+function makeAgent(seedStr,holder){
+  var r=rng(hash(seedStr)),clsN=Object.keys(CLASSES),cls=clsN[Math.floor(r()*clsN.length)],C=CLASSES[cls];
+  var a={id:seedStr,cls:cls,armor:Math.floor(r()*ARMOR.length),cape:Math.floor(r()*CAPES.length),visor:Math.floor(r()*VISOR.length),
+    name:PRE[Math.floor(r()*PRE.length)]+'-'+SUF[Math.floor(r()*SUF.length)]+' #'+String(Math.floor(r()*9000)+1000),holder:!!holder};
+  a.base={hp:Math.round((70+r()*24)*C.hp),atk:Math.round((9+r()*5)*C.atk),def:Math.round((3+r()*4)*C.def),spd:Math.round((5+r()*5)*C.spd),crit:+(0.07+r()*0.08+(cls==='Scout'?.08:0)).toFixed(2)};
+  return a}
+var DATA_KEY='canopyclash.v1';
+var save=store.get(DATA_KEY,{trialSeed:null,agents:{}});
+function prog(a){if(!save.agents[a.id])save.agents[a.id]={xp:0,lvl:1,amber:0,vine:0,relic:0,w:0,l:0,streak:0};return save.agents[a.id]}
+function persist(){store.set(DATA_KEY,save)}
+function stats(a){var p=prog(a),L=p.lvl-1,b=a.base;return {hp:b.hp+L*6,atk:b.atk+L,def:b.def+Math.floor(L/2),spd:b.spd+Math.floor(L/3),crit:b.crit}}
+if(!save.trialSeed){save.trialSeed='trial-'+Math.random().toString(36).slice(2,10);persist()}
+var agent=makeAgent(save.trialSeed,false);
+
+function renderAgent(){
+  var s=stats(agent),p=prog(agent);$('#aName').textContent=agent.name;$('#aClass').textContent=agent.cls;$('#aLvl').textContent='LV '+p.lvl;
+  var rows=[['HP',s.hp,160],['ATK',s.atk,26],['DEF',s.def,14],['SPD',s.spd,16],['CRIT',Math.round(s.crit*100),30]];
+  $('#aStats').innerHTML=rows.map(function(r){return '<div class="stat"><span>'+r[0]+'</span><div class="bar"><i style="width:'+clamp(r[1]/r[2]*100,6,100)+'%;background:'+(r[0]==='HP'?'#6bd16b':r[0]==='ATK'?'#e0503c':r[0]==='DEF'?'#5fd3e6':r[0]==='SPD'?'#f5b942':'#c49bff')+'"></i></div><span>'+r[1]+(r[0]==='CRIT'?'%':'')+'</span></div>'}).join('');
+  $('#invAmber').textContent=p.amber;$('#invVine').textContent=p.vine;$('#invRelic').textContent=p.relic;$('#invWins').textContent=p.w;
+  var need=100+(p.lvl-1)*60;$('#xpBar').style.width=clamp(p.xp/need*100,0,100)+'%';$('#xpTxt').textContent='LV '+p.lvl+' · XP '+p.xp+' / '+need;
+  $('#recW').textContent=p.w;$('#recL').textContent=p.l;$('#recS').textContent=p.streak;
+  $('#rerollBtn').hidden=!!W.addr;
+  var badge=$('#aBadge');
+  if(W.addr&&agent.holder){badge.textContent='HOLDER AGENT';badge.className='tag amber';$('#aStatusTxt').innerHTML='Wallet '+short(W.addr)+' holds <span class="tk">$CC</span>. Your agent is awake.'}
+  else if(W.addr){badge.textContent='WALLET AGENT';badge.className='tag water';$('#aStatusTxt').innerHTML=CONFIG.tokenCA?('Wallet '+short(W.addr)+' connected. Hold '+CONFIG.minHold+'+ <span class="tk">$CC</span> to mark it as a holder agent.'):('Wallet '+short(W.addr)+' connected. Holder status unlocks when <span class="tk">$CC</span> launches.')}
+  else{badge.textContent='TRIAL AGENT';badge.className='tag';$('#aStatusTxt').textContent='Connect a wallet to wake the agent tied to your address.'}
+  $('#wakeBtn').textContent=W.addr?'◆ Disconnect '+short(W.addr):'◆ Connect & wake agent';
+  arena&&arena.syncAgent();hero&&hero.syncAgent();
+}
+(function(){var cv=$('#portrait'),x=cv.getContext('2d');x.imageSmoothingEnabled=false;
+  (function f(t){requestAnimationFrame(f);if(document.hidden)return;
+    P(x,0,0,64,64,'#0e2216');for(var i=0;i<64;i+=8)for(var j=0;j<64;j+=8)if((i+j)%16===0)P(x,i,j,8,8,'#11281a');
+    ell(x,32,54,20,4,'#0a1a10');ell(x,32,53,18,3,'#1d4a2d');
+    x.save();x.translate(28,54);x.scale(1.75,1.75);drawAgent(x,agent,0,0,reduce?0:t,{});x.restore();
+    if(agent.holder){P(x,52,4,8,8,'#0a120c');P(x,53,5,6,6,'#f5b942');P(x,55,7,2,2,'#fff3b0')}
+  })(0)})();
+$('#rerollBtn').addEventListener('click',function(){save.trialSeed='trial-'+Math.random().toString(36).slice(2,10);persist();agent=makeAgent(save.trialSeed,false);renderAgent();toast('A new trial agent wakes up: '+agent.name)});
+
+/* =====================================================================
+   BATTLE ENGINE (shared by hero demo + arena)
+   ===================================================================== */
+function Fighter(kind,def,lvlBoost){
+  this.kind=kind;this.def=def;
+  if(kind==='agent'){var s=stats(def);this.name=def.name;this.max=s.hp;this.atk=s.atk;this.dfn=s.def;this.spd=s.spd;this.crit=s.crit}
+  else{var b=lvlBoost||0;this.name=def.name;this.max=def.hp+b*5;this.atk=def.atk+Math.floor(b*.8);this.dfn=def.def+Math.floor(b/3);this.spd=def.spd;this.crit=.08}
+  this.hp=this.max;this.guard=false;this.cd=0;this.poison=0;this.st={};
+}
+function Battle(o){
+  var self=this;this.o=o;this.busy=false;this.over=false;this.turn=0;
+  this.A=new Fighter('agent',o.agent);this.B=new Fighter('rival',o.rival,o.boost);
+}
+Battle.prototype.dmg=function(att,def,mult){
+  var r=Math.random();if(def.def&&def.def.trait==='dodge'&&r<.18)return {miss:true};if(r<.06)return {miss:true};
+  var crit=Math.random()<att.crit,base=att.atk*(0.85+Math.random()*.3)*(mult||1)*(crit?1.6:1)-def.dfn*.55;var d=Math.max(1,Math.round(base));if(def.guard)d=Math.max(1,Math.round(d*.45));return {d:d,crit:crit}};
+Battle.prototype.act=async function(att,def,action){
+  var o=this.o,isA=att===this.A,mult=action==='special'?2:1;
+  if(action==='guard'){att.guard=true;var heal=Math.round(att.max*(att.kind==='agent'&&att.def.cls==='Shaman'?.12:.06));att.hp=Math.min(att.max,att.hp+heal);o.pop(att,'+'+heal,'heal');o.log((isA?'you':'them'),att.name+' guards'+(heal?' and recovers '+heal+' HP':'')+'.');o.hud();await sleep(450);return}
+  if(action==='special')att.cd=3;
+  att.st.walk=true;for(var i=0;i<=8;i++){att.st.lunge=i*(o.dist/8);await sleep(18)}att.st.walk=false;
+  for(i=0;i<=6;i++){att.st.swing=-1.4+i*.45;await sleep(22)}
+  var res=this.dmg(att,def,mult);
+  if(res.miss){o.pop(def,'MISS','miss');o.log('sys',att.name+(action==='special'?'\'s special':'')+' misses!')}
+  else{def.hp=Math.max(0,def.hp-res.d);def.st.flash=true;def.st.hurt=1;o.shake(res.crit||action==='special'?3:1.5);o.spark(def,action==='special');
+    o.pop(def,(res.crit?'CRIT ':'')+res.d,res.crit?'crit':'');o.log(isA?'you':'them',att.name+(action==='special'?' unleashes a special for ':' hits for ')+res.d+(res.crit?' (critical!)':'')+'.');
+    if(!isA&&this.B.def.trait==='poison'&&Math.random()<.6){def.poison=3;o.log('them','Vines wrap '+def.name+'. Poisoned!')}
+    o.hud();await sleep(120);def.st.flash=false;await sleep(100);def.st.hurt=0}
+  def.guard=false;att.st.swing=null;
+  for(i=8;i>=0;i--){att.st.lunge=i*(o.dist/8);await sleep(16)}
+  await sleep(220);
+};
+Battle.prototype.rivalChoice=function(){var B=this.B;if(B.cd===0&&Math.random()<.32)return 'special';if(B.hp<B.max*.35&&Math.random()<.35)return 'guard';return 'strike'};
+Battle.prototype.agentAuto=function(){var A=this.A;if(A.cd===0&&Math.random()<.5)return 'special';if(A.hp<A.max*.3&&Math.random()<.4)return 'guard';return 'strike'};
+Battle.prototype.round=async function(action){
+  if(this.busy||this.over)return;this.busy=true;var o=this.o;o.lock(true);
+  var first=this.A.spd>=this.B.spd?['A','B']:['B','A'];
+  var acts={A:action,B:this.rivalChoice()};
+  for(var k=0;k<2;k++){var who=first[k],att=this[who],def=this[who==='A'?'B':'A'];if(att.hp<=0||def.hp<=0)break;
+    if(who==='B'&&Math.random()<.35)o.say(this.B,this.B.def.taunts[Math.floor(Math.random()*this.B.def.taunts.length)]);
+    await this.act(att,def,acts[who])}
+  // poison tick
+  [this.A,this.B].forEach(function(f){if(f.poison>0&&f.hp>0){f.poison--;f.hp=Math.max(0,f.hp-3);o.pop(f,'3','');o.log('them',f.name+' takes 3 poison damage.')}});
+  [this.A,this.B].forEach(function(f){if(f.cd>0)f.cd--});
+  o.hud();
+  if(this.A.hp<=0||this.B.hp<=0){this.over=true;if(this.A.hp<=0)this.A.st.dead=true;if(this.B.hp<=0)this.B.st.dead=true;await sleep(300);o.end(this.A.hp>0)}
+  this.busy=false;o.lock(false);
+};
+
+/* =====================================================================
+   STAGE RENDERER (canvas + HTML overlays)
+   ===================================================================== */
+function Stage(cv,popsEl,bubbleEl,opts){
+  var self=this;this.cv=cv;this.x=cv.getContext('2d');this.pops=popsEl;this.bubble=bubbleEl;this.opts=opts||{};this.sh=0;this.sparks=[];this.px=0;this.tpx=0;this.battle=null;
+  this.resize();addEventListener('resize',function(){clearTimeout(self.rt);self.rt=setTimeout(function(){self.resize()},150)});
+  if(this.opts.parallax&&!reduce)addEventListener('pointermove',function(e){self.tpx=(e.clientX/innerWidth-.5)*-10},{passive:true});
+  var last=0;(function f(t){requestAnimationFrame(f);if(document.hidden)return;if(t-last<30)return;last=t;self.draw(reduce?0:t)})(0);
+}
+Stage.prototype.resize=function(){
+  var H=180,W=320;if(this.opts.cover){var r=this.cv.getBoundingClientRect();W=clamp(Math.round(H*r.width/Math.max(1,r.height)),240,440)}
+  this.cv.width=W;this.cv.height=H;this.x.imageSmoothingEnabled=false;this.J=makeJungle(W+16,H,this.opts.seed||7);this.W=W;this.H=H;
+  this.posA=Math.round(W*.5-26);this.posB=Math.round(W*.5+26);this.feet=this.J.G+20;
+};
+Stage.prototype.draw=function(t){
+  var x=this.x;this.px+=(this.tpx-this.px)*.08;var sx=this.sh>0?Math.round((Math.random()-.5)*this.sh*2):0,sy=this.sh>0?Math.round((Math.random()-.5)*this.sh):0;this.sh=Math.max(0,this.sh-.4);
+  x.save();x.translate(sx-8,sy);drawJungle(x,this.J,t,this.px);x.restore();
+  x.save();x.translate(sx,sy);
+  var b=this.battle;if(b){drawAgent(x,b.A.def,this.posA,this.feet,t,b.A.st);drawRival(x,b.B.def,this.posB,this.feet,t,b.B.st)}
+  this.sparks=this.sparks.filter(function(s){s.x+=s.vx;s.y+=s.vy;s.vy+=.15;s.l--;x.fillStyle=s.c;x.fillRect(Math.round(s.x),Math.round(s.y),s.s,s.s);return s.l>0});
+  x.restore();
+  x.drawImage(this.J.fg,-8,0);
+};
+Stage.prototype.toPct=function(f){var isA=this.battle&&f===this.battle.A,X=isA?this.posA:this.posB,s=(!isA&&f.def.scale)||1;return {l:X/this.W*100,t:(this.feet-30*s)/this.H*100}};
+Stage.prototype.cssPos=function(f){
+  // map logical → element px, respecting object-fit: cover
+  var r=this.cv.getBoundingClientRect(),p=this.toPct(f),scale=Math.max(r.width/this.W,r.height/this.H),dw=this.W*scale,dh=this.H*scale,ox=(r.width-dw)/2,oy=(r.height-dh)/2;
+  return {x:ox+p.l/100*dw,y:oy+p.t/100*dh}};
+Stage.prototype.pop=function(f,txt,cls){var p=this.cssPos(f),e=document.createElement('div');e.className='pop'+(cls?' '+cls:'');e.textContent=txt;e.style.left=(p.x+(Math.random()*16-8))+'px';e.style.top=p.y+'px';this.pops.appendChild(e);setTimeout(function(){e.remove()},1000)};
+Stage.prototype.say=function(f,txt){var p=this.cssPos(f),b=this.bubble;b.textContent=txt;b.style.left=p.x+'px';b.style.top=(p.y-14)+'px';b.classList.add('on');clearTimeout(this.bt);this.bt=setTimeout(function(){b.classList.remove('on')},1800)};
+Stage.prototype.spark=function(f,big){var isA=f===this.battle.A,X=isA?this.posA:this.posB,cols=big?['#ffd75e','#fff','#ff8a4a']:['#fff','#ffd75e'];for(var i=0;i<(big?18:9);i++)this.sparks.push({x:X,y:this.feet-14,vx:(Math.random()-.5)*3,vy:-Math.random()*2.5,l:12+Math.random()*10,c:cols[i%cols.length],s:Math.random()<.3?2:1})};
+
+/* =====================================================================
+   HERO: endless demo clash
+   ===================================================================== */
+var hero=(function(){
+  var st=new Stage($('#heroCv'),$('#heroPops'),$('#heroBubble'),{cover:true,parallax:true,seed:11});
+  var ri=0,running=false;
+  function hud(){var b=st.battle;$('#hhpA').style.width=(b.A.hp/b.A.max*100)+'%';$('#hhpB').style.width=(b.B.hp/b.B.max*100)+'%';$('#hhA').textContent=b.A.name.split(' ')[0].toUpperCase();$('#hhB').textContent=b.B.name.toUpperCase()}
+  async function loop(){if(running)return;running=true;
+    while(true){
+      var demo=makeAgent('hero-'+(ri%7),false);var rv=RIVALS[ri%RIVALS.length];ri++;
+      var b=new Battle({agent:demo,rival:rv,boost:0,dist:Math.round(st.posB-st.posA-14),pop:st.pop.bind(st),say:st.say.bind(st),shake:function(v){st.sh=v},spark:st.spark.bind(st),log:function(){},hud:hud,lock:function(){},end:function(){}});
+      // use the visitor's own agent as the hero once it exists
+      if(agent&&ri%2===1)b=new Battle({agent:agent,rival:rv,boost:0,dist:Math.round(st.posB-st.posA-14),pop:st.pop.bind(st),say:st.say.bind(st),shake:function(v){st.sh=v},spark:st.spark.bind(st),log:function(){},hud:hud,lock:function(){},end:function(){}});
+      b.B.max=b.B.hp=Math.round(b.A.max*1.05);
+      st.battle=b;hud();await sleep(900);st.say(b.B,rv.taunts[0]);await sleep(1300);
+      while(!b.over){await b.round(b.agentAuto());await sleep(500)}
+      if(b.A.hp>0)st.say(b.A,'Loot secured. 🟠');else st.say(b.B,'Hah! Back to the canopy.');
+      await sleep(2200);
+    }}
+  loop();
+  return {syncAgent:function(){}};
+})();
+
+/* =====================================================================
+   ARENA (interactive)
+   ===================================================================== */
+var arena=(function(){
+  var st=new Stage($('#arenaCv'),$('#arenaPops'),$('#arenaBubble'),{seed:23});
+  var rivalIdx=0,auto=false,b=null;
+  var pick=$('#rivalPick');pick.innerHTML=RIVALS.map(function(r,i){return '<button class="rp" data-i="'+i+'" aria-pressed="'+(i===0)+'"><canvas class="px" width="32" height="32"></canvas>'+esc(r.name)+'</button>'}).join('');
+  $$('.rp canvas',pick).forEach(function(c,i){var x=c.getContext('2d');x.imageSmoothingEnabled=false;var r=RIVALS[i];P(x,0,0,32,32,'#0e2216');drawRival(x,r,16,30-(r.scale>1?0:2),0,{})});
+  $$('.rp',pick).forEach(function(bt){bt.addEventListener('click',function(){if(b&&b.busy)return;rivalIdx=+bt.dataset.i;$$('.rp',pick).forEach(function(x){x.setAttribute('aria-pressed',x===bt)});start()})});
+  function log(cls,txt){var p=document.createElement('p');p.className=cls;p.textContent=txt;var l=$('#blog');l.appendChild(p);l.scrollTop=l.scrollHeight;while(l.children.length>60)l.firstChild.remove()}
+  function hud(){if(!b)return;$('#ahpA').style.width=(b.A.hp/b.A.max*100)+'%';$('#ahpB').style.width=(b.B.hp/b.B.max*100)+'%';$('#ahpAT').textContent=b.A.hp+'/'+b.A.max;$('#ahpBT').textContent=b.B.hp+'/'+b.B.max;$('#anA').textContent=b.A.name+' · LV '+prog(agent).lvl;$('#anB').textContent=b.B.name;
+    $('#spTxt').textContent=b.A.cd?('ready in '+b.A.cd):'ready';$('#spBtn').disabled=!!b.A.cd||b.busy||b.over}
+  function lock(v){$$('.actions [data-act]').forEach(function(x){x.disabled=v||b.over||(x.dataset.act==='special'&&!!b.A.cd)})}
+  function end(win){
+    var p=prog(agent),loot={amber:0,vine:0,relic:0},xp;
+    if(win){loot.amber=3+Math.floor(Math.random()*6)+(RIVALS[rivalIdx].id==='brute'?4:0);loot.vine=1+Math.floor(Math.random()*4)+(RIVALS[rivalIdx].id==='vine'?3:0);loot.relic=Math.random()<(RIVALS[rivalIdx].id==='glitch'?.6:.25)?1:0;xp=40+rivalIdx*8;p.w++;p.streak++}
+    else{loot.amber=1;xp=12;p.l++;p.streak=0}
+    p.amber+=loot.amber;p.vine+=loot.vine;p.relic+=loot.relic;p.xp+=xp;var lvlUp=false;while(p.xp>=100+(p.lvl-1)*60){p.xp-=100+(p.lvl-1)*60;p.lvl++;lvlUp=true}persist();
+    log('loot',(win?'Victory! ':'Defeat. ')+'+'+loot.amber+' amber'+(loot.vine?', +'+loot.vine+' vines':'')+(loot.relic?', +1 relic shard':'')+', +'+xp+' XP'+(lvlUp?' · LEVEL UP!':''));
+    $('#resT').textContent=win?'VICTORY!':'DEFEATED';$('#resT').style.color=win?'#9be36b':'#ff8a74';
+    $('#resP').textContent=win?(b.B.name+' retreats into the canopy.'+(lvlUp?' Your agent reached LV '+p.lvl+'!':'')):(b.B.name+' wins this round. Your agent limps home with a little amber.');
+    $('#resLoot').innerHTML='<span style="color:#f5b942">+'+loot.amber+' AMBER</span>'+(loot.vine?'<span style="color:#6bd16b">+'+loot.vine+' VINES</span>':'')+(loot.relic?'<span style="color:#5fd3e6">+1 RELIC</span>':'')+'<span style="color:#fff">+'+xp+' XP</span>';
+    $('#result').hidden=false;renderAgent();if(auto){setTimeout(function(){if(auto){start()}},1600)}
+  }
+  function start(){
+    $('#result').hidden=true;var lv=prog(agent).lvl;
+    b=new Battle({agent:agent,rival:RIVALS[rivalIdx],boost:Math.max(0,lv-1),dist:Math.round(st.posB-st.posA-14),pop:st.pop.bind(st),say:st.say.bind(st),shake:function(v){st.sh=v},spark:st.spark.bind(st),log:log,hud:hud,lock:lock,end:end});
+    st.battle=b;$('#blog').innerHTML='';log('sys','A wild '+b.B.name+' blocks the path!');log('sys','Your '+agent.cls+' '+agent.name+' steps into the clearing.');hud();lock(false);
+    setTimeout(function(){st.say(b.B,RIVALS[rivalIdx].taunts[0])},500);
+    if(auto)autoRun();
+  }
+  async function autoRun(){while(auto&&b&&!b.over){if(!b.busy)await b.round(b.agentAuto());await sleep(350)}}
+  $$('.actions [data-act]').forEach(function(bt){bt.addEventListener('click',function(){if(!b||b.over)return;b.round(bt.dataset.act)})});
+  $('#autoBtn').addEventListener('click',function(){auto=!auto;this.setAttribute('aria-pressed',auto);this.firstChild.textContent=auto?'❚❚ Auto ':'▶ Auto ';this.classList.toggle('green',auto);this.classList.toggle('dark',!auto);if(auto){if(!b||b.over)start();else autoRun()}});
+  $('#againBtn').addEventListener('click',start);
+  // keyboard: 1/2/3
+  document.addEventListener('keydown',function(e){if(!b||b.over||b.busy||/input|textarea/i.test(e.target.tagName))return;var r=$('#arena').getBoundingClientRect();if(r.top>innerHeight||r.bottom<0)return;var m={'1':'strike','2':'guard','3':'special'}[e.key];if(m&&!(m==='special'&&b.A.cd))b.round(m)});
+  start();
+  return {syncAgent:function(){if(b&&!b.busy){start()}}};
+})();
+
+/* rival bestiary */
+$('#rivalCards').innerHTML=RIVALS.map(function(r,i){return '<article class="pbox stone rival reveal"><canvas class="px" width="40" height="40"></canvas><h3>'+esc(r.name)+'</h3><p>'+esc(r.lore)+'</p><div class="chips"><span class="tag red">HP '+r.hp+'</span><span class="tag amber">ATK '+r.atk+'</span><span class="tag water">SPD '+r.spd+'</span></div><div style="margin-top:12px"><button class="btn sm red" data-fight="'+i+'">⚔ Fight</button></div></article>'}).join('');
+$$('#rivalCards canvas').forEach(function(c,i){var x=c.getContext('2d');x.imageSmoothingEnabled=false;var r=RIVALS[i];(function f(t){requestAnimationFrame(f);if(document.hidden)return;P(x,0,0,40,40,'#0e2216');ell(x,20,36,12,2,'#0a1a10');drawRival(x,r,20,36,reduce?0:t,{})})(0)});
+$$('[data-fight]').forEach(function(bt){bt.addEventListener('click',function(){$$('.rp')[+bt.dataset.fight].click();document.getElementById('arena').scrollIntoView({behavior:'smooth'})})});
+
+/* =====================================================================
+   WALLET (read-only) + $CC holder check
+   ===================================================================== */
+var STD=new Set();var wsApi=Object.freeze({register:function(){var ws=[].slice.call(arguments);ws.forEach(function(w){STD.add(w)});return function(){ws.forEach(function(w){STD.delete(w)})}}});
+addEventListener('wallet-standard:register-wallet',function(e){try{e.detail(wsApi)}catch(err){}});try{dispatchEvent(new CustomEvent('wallet-standard:app-ready',{detail:wsApi}))}catch(e){}
+function listWallets(){var o=[];STD.forEach(function(w){if(w.features&&w.features['standard:connect']&&(w.chains||[]).some(function(c){return String(c).indexOf('solana:')===0}))o.push({name:w.name,icon:w.icon,kind:'std',w:w})});
+  function has(re){return o.some(function(x){return re.test(x.name)})}var ph=window.phantom&&window.phantom.solana;if(ph&&ph.isPhantom&&!has(/phantom/i))o.push({name:'Phantom',kind:'legacy',p:ph});
+  if(window.solflare&&window.solflare.isSolflare&&!has(/solflare/i))o.push({name:'Solflare',kind:'legacy',p:window.solflare});if(window.backpack&&window.backpack.isBackpack&&!has(/backpack/i))o.push({name:'Backpack',kind:'legacy',p:window.backpack});return o}
+var W={addr:null,entry:null};function short(a){return a.slice(0,4)+'…'+a.slice(-4)}
+function openWallet(){if(W.addr){disconnect();return}var ws=listWallets(),l=$('#wList');
+  l.innerHTML=ws.length?ws.map(function(w,i){return '<button class="wopt" data-i="'+i+'">'+(w.icon?'<img src="'+esc(w.icon)+'" alt="">':'◆')+esc(w.name)+'</button>'}).join(''):'<p style="margin:0">No Solana wallet found. Install <a href="https://phantom.app" target="_blank" rel="noopener" style="color:var(--leaf)">Phantom</a>, <a href="https://solflare.com" target="_blank" rel="noopener" style="color:var(--leaf)">Solflare</a> or <a href="https://backpack.app" target="_blank" rel="noopener" style="color:var(--leaf)">Backpack</a>, then reload.</p>';
+  $$('.wopt',l).forEach(function(b){b.addEventListener('click',function(){connect(ws[+b.dataset.i])})});$('#wModal').hidden=false}
+function closeW(){$('#wModal').hidden=true}
+$('#wmX').addEventListener('click',closeW);$('#wModal').addEventListener('click',function(e){if(e.target===this)closeW()});document.addEventListener('keydown',function(e){if(e.key==='Escape')closeW()});
+function connect(entry){var pr=entry.kind==='std'?entry.w.features['standard:connect'].connect().then(function(r){var a=(r&&r.accounts)||entry.w.accounts||[];return a[0]&&a[0].address}):entry.p.connect().then(function(r){var pk=(r&&r.publicKey)||entry.p.publicKey;return pk&&pk.toString()});
+  pr.then(function(addr){if(!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr||''))throw new Error('no address');W.addr=addr;W.entry=entry;closeW();agent=makeAgent('wallet-'+addr,false);renderConn();renderAgent();toast('Agent awakened: '+agent.name);checkHolder()})
+   .catch(function(e){toast(/reject|cancel|denied|closed/i.test(String(e&&e.message))?'Connection cancelled':'Could not connect')})}
+function checkHolder(){
+  if(!CONFIG.tokenCA||!W.addr)return;var addr=W.addr;
+  fetch(CONFIG.rpcUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'getTokenAccountsByOwner',params:[addr,{mint:CONFIG.tokenCA},{encoding:'jsonParsed'}]})})
+    .then(function(r){return r.json()}).then(function(j){if(W.addr!==addr)return;var tot=0;((j.result&&j.result.value)||[]).forEach(function(a){try{tot+=a.account.data.parsed.info.tokenAmount.uiAmount||0}catch(e){}});
+      agent.holder=tot>=CONFIG.minHold;renderAgent();toast(agent.holder?'$CC holder confirmed. Holder agent unlocked!':'No $CC found in this wallet yet.')})
+    .catch(function(){toast('Could not check $CC balance right now')})}
+function disconnect(){try{if(W.entry.kind==='std'&&W.entry.w.features['standard:disconnect'])W.entry.w.features['standard:disconnect'].disconnect();else if(W.entry.p&&W.entry.p.disconnect)W.entry.p.disconnect()}catch(e){}W.addr=null;W.entry=null;agent=makeAgent(save.trialSeed,false);renderConn();renderAgent();toast('Disconnected. Back to your trial agent.')}
+function renderConn(){var b=$('#connBtn');b.classList.toggle('on',!!W.addr);$('.lbl',b).textContent=W.addr?short(W.addr):'Connect'}
+$('#connBtn').addEventListener('click',openWallet);$('#wakeBtn').addEventListener('click',openWallet);
+
+renderAgent();
+
+/* reveal */
+(function(){var els=$$('.reveal');if(!('IntersectionObserver' in window)||reduce){els.forEach(function(e){e.classList.add('in')});return}
+  var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}})},{rootMargin:'0px 0px -8% 0px'});els.forEach(function(e){io.observe(e)})})();
+})();
+</script>
+</body>
+</html>
